@@ -1,0 +1,392 @@
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:Feedme/Admin/Product/ProductList/productlist.dart';
+// import 'package:Feedme/Page/BasePage.dart';
+// import 'package:Feedme/Page/cart_provider.dart';
+// import 'package:Feedme/Page/db_helper.dart';
+// import 'package:Feedme/constants/config.dart';
+// import 'package:provider/provider.dart';
+// import 'cart_model.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:Feedme/constants/config.dart';
+//
+// class CartPage extends StatefulWidget {
+//   const CartPage({super.key});
+//
+//   @override
+//   State<CartPage> createState() => _CartPageState();
+// }
+//
+// class _CartPageState extends State<CartPage> {
+//   @override
+//   void initState() {
+//     super.initState();
+//     fetchCartItems();
+//   }
+//
+//   String? _deliveryMethod = "pickup"; // ตัวเลือกเริ่มต้น "รับที่ร้าน"
+//   int _deliveryFee = 0; // ค่าบริการขนส่งเริ่มต้น
+//   List<Cart> _loadcart = []; // ค่าบริการขนส่งเริ่มต้น
+//
+//   // ตัวแปร
+//   List<dynamic> cartItems = []; // รายการสินค้าในตะกร้า
+//   double totalPrice = 0.0; // ราคารวมของสินค้าในตะกร้า
+//   int customerId = 1; // **ตัวอย่าง** ต้องดึงจากระบบ login จริง
+//
+//   Future<void> fetchCartItems() async {
+//     const String apiUrl = "http://${Config.BASE_IP}:${Config.BASE_PORT}/api/cart/1001"; // เปลี่ยน customer_id เป็นค่าจริง
+//     try {
+//       final response = await http.get(Uri.parse(apiUrl));
+//       print("API Response: ${response.body}");
+//
+//       if (response.statusCode == 200) {
+//         List<dynamic> jsonData = json.decode(response.body);
+//         setState(() {
+//           cartItems = jsonData.map((json) => Cart.fromJson(json)).toList();
+//           totalPrice = cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
+//         });
+//       } else {
+//         throw Exception("Failed to load cart items");
+//       }
+//     } catch (error) {
+//       print("Error fetching cart items: $error");
+//     }
+//   }
+//
+//
+//
+//   Future<void> removeFromCart(int productId) async {
+//     var cart = Provider.of<CartProvider>(context, listen: false);
+//     final response = await http.delete(
+//       Uri.parse("http://${Config.BASE_IP}:${Config.BASE_PORT}/api/cart/remove"),
+//       body: jsonEncode({"customer_id": customerId, "product_id": productId}),
+//       headers: {"Content-Type": "application/json"},
+//     );
+//
+//     if (response.statusCode == 200) {
+//       cart.removeProduct(productId); // ลบจาก Provider
+//       fetchCartItems(); // โหลดข้อมูลใหม่
+//     } else {
+//       print("Failed to remove item from cart");
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final cart = Provider.of<CartProvider>(context);
+//     Widget body = Scaffold(
+//       appBar: AppBar(
+//         title: const Text(
+//           "Cart",
+//           style: TextStyle(color: Colors.white), // เปลี่ยนสีข้อความเป็นสีขาว
+//         ),
+//         backgroundColor: Colors.blue, // สีพื้นหลังของ AppBar
+//         elevation: 0,
+//         centerTitle: true,// เอาเงาของ AppBar ออก
+//       ),
+//       body: Column(
+//         children: [
+//           Expanded(
+//             child: RefreshIndicator(
+//               onRefresh: fetchCartItems, // ดึงข้อมูลใหม่เมื่อ Refresh
+//               child: cart.cartItems.isEmpty
+//                   ? Center(child: Text("ยังไม่มีสินค้าในตะกร้า"))
+//                   : ListView.builder(
+//                 itemCount: cart.cartItems.length,
+//                 itemBuilder: (context, index) {
+//                   var cartItem = cart.cartItems[index];
+//                   return Card(
+//                     child: Padding(
+//                       padding: const EdgeInsets.all(8.0),
+//                       child: Row(
+//                         crossAxisAlignment: CrossAxisAlignment.center,
+//                         children: [
+//                           // ตรวจสอบภาพก่อนแสดง
+//                           Image(
+//                             image: cartItem.imageUrl != null &&
+//                                 cartItem.imageUrl.startsWith("http")
+//                                 ? NetworkImage(cartItem.imageUrl)
+//                                 : AssetImage(cartItem.imageUrl ?? 'assets/images/default.png')
+//                             as ImageProvider,
+//                             height: 100,
+//                             width: 100,
+//                             fit: BoxFit.cover,
+//                           ),
+//                           SizedBox(width: 10),
+//                           Expanded(
+//                             child: Column(
+//                               crossAxisAlignment: CrossAxisAlignment.start,
+//                               children: [
+//                                 Text(cartItem.productName),
+//                                 Text("ราคา: ${cartItem.price} บาท"),
+//                                  // Text("จำนวน: ${cartItem.quantity}"),
+//                               ],
+//                             ),
+//                           ),
+//                           IconButton(
+//                             icon: Icon(Icons.delete),
+//                             onPressed: () {
+//                               final cart = Provider.of<CartProvider>(context, listen: false);
+//                               cart.removeProduct(index);
+//                             },
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   );
+//                 },
+//               ),
+//             ),
+//           ),
+//           // ราคารวมและปุ่มชำระเงิน
+//           Container(
+//             color: Colors.grey[200],
+//             padding: const EdgeInsets.all(16.0),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Divider(),
+//                 ReusableWidget(title: "ราคาสินค้าทั้งหมด", value: cart.getTotalPrice()),
+//                 ReusableWidget(title: "ค่าจัดส่ง", value: _deliveryFee.toDouble()),
+//                 ReusableWidget(
+//                   title: "ราคารวม",
+//                   value: cart.getTotalPrice() + _deliveryFee,
+//                 ),
+//                 SizedBox(height: 10),
+//                 ElevatedButton(
+//                   onPressed: () {
+//                     Navigator.pushNamed(context, '/Payment', arguments: {
+//                       "deliveryMethod": _deliveryMethod,
+//                       "totalPrice": cart.getTotalPrice() + _deliveryFee,
+//                     });
+//                   },
+//                   style: ElevatedButton.styleFrom(
+//                     minimumSize: Size(double.infinity, 50),
+//                   ),
+//                   child: Text("ชำระเงิน"),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//
+//     return BasePage(body: body, index: 2);
+//   }
+// }
+//
+// class ReusableWidget extends StatelessWidget {
+//   final String title;
+//   final double value;
+//
+//   const ReusableWidget({required this.title, required this.value});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(vertical: 4),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           Text(title, style: Theme.of(context).textTheme.titleMedium),
+//           Text(
+//             value < 0 ? "0 บาท" : "${value.toStringAsFixed(2)} บาท",
+//             style: Theme.of(context).textTheme.titleMedium,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:Feedme/constants/config.dart';
+import 'package:provider/provider.dart';
+import 'cart_model.dart';
+import 'package:http/http.dart' as http;
+import 'cart_provider.dart';
+
+class CartPage extends StatefulWidget {
+  const CartPage({super.key});
+
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  @override
+  void initState() {
+    super.initState();
+    fetchCartItems();
+  }
+
+  String? _deliveryMethod = "pickup";
+  int _deliveryFee = 0;
+  List<Cart> _loadcart = [];
+
+  List<dynamic> cartItems = [];
+  double totalPrice = 0.0;
+  int customerId = 1;
+
+  Future<void> fetchCartItems() async {
+    const String apiUrl = "http://${Config.BASE_IP}:${Config.BASE_PORT}/api/cart/1001";
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      print("API Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        List<dynamic> jsonData = json.decode(response.body);
+        setState(() {
+          cartItems = jsonData.map((json) => Cart.fromJson(json)).toList();
+          totalPrice = cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
+        });
+      } else {
+        throw Exception("Failed to load cart items");
+      }
+    } catch (error) {
+      print("Error fetching cart items: $error");
+    }
+  }
+
+  Future<void> removeFromCart(int productId) async {
+    var cart = Provider.of<CartProvider>(context, listen: false);
+    final response = await http.delete(
+      Uri.parse("http://${Config.BASE_IP}:${Config.BASE_PORT}/api/cart/remove"),
+      body: jsonEncode({"customer_id": customerId, "product_id": productId}),
+      headers: {"Content-Type": "application/json"},
+    );
+
+    if (response.statusCode == 200) {
+      cart.removeProduct(productId);
+      fetchCartItems();
+    } else {
+      print("Failed to remove item from cart");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Cart",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.blue,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: fetchCartItems,
+              child: cart.cartItems.isEmpty
+                  ? Center(child: Text("ยังไม่มีสินค้าในตะกร้า"))
+                  : ListView.builder(
+                itemCount: cart.cartItems.length,
+                itemBuilder: (context, index) {
+                  var cartItem = cart.cartItems[index];
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Image(
+                            image: cartItem.imageUrl != null &&
+                                cartItem.imageUrl.startsWith("http")
+                                ? NetworkImage(cartItem.imageUrl)
+                                : AssetImage(cartItem.imageUrl ?? 'assets/images/default.png')
+                            as ImageProvider,
+                            height: 100,
+                            width: 100,
+                            fit: BoxFit.cover,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(cartItem.productName),
+                                Text("ราคา: ${cartItem.price} บาท"),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              final cart = Provider.of<CartProvider>(context, listen: false);
+                              cart.removeProduct(index);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Container(
+            color: Colors.grey[200],
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Divider(),
+                ReusableWidget(title: "ราคาสินค้าทั้งหมด", value: cart.getTotalPrice()),
+                ReusableWidget(title: "ค่าจัดส่ง", value: _deliveryFee.toDouble()),
+                ReusableWidget(
+                  title: "ราคารวม",
+                  value: cart.getTotalPrice() + _deliveryFee,
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/Payment', arguments: {
+                      "deliveryMethod": _deliveryMethod,
+                      "totalPrice": cart.getTotalPrice() + _deliveryFee,
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                  child: Text("ชำระเงิน"),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ReusableWidget extends StatelessWidget {
+  final String title;
+  final double value;
+
+  const ReusableWidget({required this.title, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            value < 0 ? "0 บาท" : "${value.toStringAsFixed(2)} บาท",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,0 +1,237 @@
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'HomePage.dart';
+import 'register.dart';
+import '../Admin/Admin.dart';
+import 'package:Feedme/constants/config.dart';
+import 'package:Feedme/Page/UserProvider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+void main() {
+  runApp(MyApp());
+}
+Future<void> saveUserData(Map<String, dynamic> userData) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  await prefs.setString('user_data', jsonEncode(userData)); // ✅ บันทึก JSON
+  print("📌 Token ที่บันทึก: ${userData['token']}");
+  print("✅ บันทึกข้อมูลผู้ใช้เรียบร้อย: ${jsonEncode(userData)}");
+}
+
+Future<void> checkLoginStatus(BuildContext context) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? userData = prefs.getString("user_data");
+
+  if (userData != null) {
+    Map<String, dynamic> user = jsonDecode(userData);
+    print("✅ พบข้อมูลผู้ใช้: ${user['name']}"); // Debug
+
+    // if (user["role"] == "admin") {
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => LinkPageadmin()),
+    //   );
+    // } else {
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => HomePage()),
+    //   );
+    // }
+    if (user["role"] == 'admin') {
+      Future.delayed(Duration(milliseconds: 300), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LinkPageadmin()),
+        );
+      });
+    } else {
+      Future.delayed(Duration(milliseconds: 300), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      });
+    }
+
+  }
+}
+
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: LoginPage(),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController EmailController = TextEditingController();
+  final TextEditingController PasswordController = TextEditingController();
+  final TextEditingController displayText = TextEditingController();
+
+  Future<void> loginUser() async {
+    try {
+      // Debug: พิมพ์ค่าที่ส่งใน body
+      print('Email: ${EmailController.text}');
+      print('Password: ${PasswordController.text}');
+
+      final response = await http.post(
+        Uri.parse('http://${Config.BASE_IP}:${Config.BASE_PORT}/api/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'Email': EmailController.text,
+          'Password': PasswordController.text,
+        }),
+      );
+
+      // Debug: พิมพ์ status code ของการตอบกลับ
+      print('Response Status Code: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Debug: พิมพ์ response body เพื่อตรวจสอบข้อมูลที่ได้รับ
+        print('Response Body: $data');
+
+        var role = data['results'][0]['role'];
+
+        // Debug: พิมพ์ role ที่ได้
+        print('Role: $role');
+        await saveUserData({
+          "customer_id": data["results"][0]["customer_id"],
+          "name": data["results"][0]["name"],
+          "email": data["results"][0]["Email"],
+          "phone": data["results"][0]["Phone"],
+          "address": data["results"][0]["address"],
+          "role": role,
+          "token": data["token"],
+        });
+        // Provider.of<UserProvider>(context, listen: false).setUserData({
+        //   "customer_id": data["results"][0]["customer_id"],
+        //   "name": data["results"][0]["name"],
+        //   "Email": data["results"][0]["Email"],
+        //   "Phone": data["results"][0]["Phone"],
+        //   "address": data["results"][0]["address"],
+        //   "role": role,
+        //   "token": data["token"],
+        // });
+        setState(() {
+          displayText.text = "Login successful!";
+        });
+
+        if (role == 'admin') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => LinkPageadmin()),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => HomePage()),
+          );
+        }
+      } else {
+        // Debug: พิมพ์ error message เมื่อ login ล้มเหลว
+        print('Login failed with status code: ${response.statusCode}');
+        setState(() {
+          displayText.text = "Invalid username or Password";
+        });
+      }
+    } catch (e) {
+      // Debug: พิมพ์ข้อผิดพลาดที่เกิดขึ้น
+      print('Error during login request: $e');
+      setState(() {
+        displayText.text = "Error occurred during login!";
+      });
+    }
+  }
+
+  //สำหรับการตรวจสอบการเข้าสู่ระบบ เมื่อเครื่องนั้นเคยเข้าสู่ระบบแล้ว
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     checkLoginStatus(context);
+  //   });
+  // }
+
+  @override
+  void dispose() {
+    EmailController.dispose();
+    PasswordController.dispose();
+    displayText.dispose();
+    super.dispose();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(  // ใช้ SingleChildScrollView
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/logo2.png', // แก้ไข path ให้ตรงกับโลโก้
+              height: 250, // ปรับความสูงของโลโก้
+            ),
+            const SizedBox(height: 40.0),
+            Text("Login", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24.0),
+            TextField(
+              controller: EmailController,
+              decoration: InputDecoration(
+                labelText: 'ID',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: PasswordController,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 24.0),
+            ElevatedButton.icon(
+              onPressed: loginUser,
+              icon: const Icon(Icons.login),
+              label: const Text("Login"),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => RegisterPage()),
+                );
+              },
+              icon: const Icon(Icons.person_add),
+              label: const Text("Register"),
+            ),
+            const SizedBox(height: 24.0),
+            TextField(
+              controller: displayText,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

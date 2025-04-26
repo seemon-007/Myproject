@@ -1,0 +1,168 @@
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+
+class OrderDetail extends StatefulWidget {
+  final Map<String, dynamic> order;
+
+  OrderDetail({required this.order});
+
+  @override
+  _OrderDetailState createState() => _OrderDetailState();
+}
+
+class _OrderDetailState extends State<OrderDetail> {
+  late GoogleMapController _mapController;
+  LatLng? _currentPosition;
+  LatLng _destination = LatLng(13.736717, 100.523186);
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    setState(() {
+      _currentPosition = LatLng(position.latitude, position.longitude);
+    });
+  }
+
+  // ฟังก์ชันจับคู่ชื่อสินค้ากับรูปภาพ
+  String getImagePath(String productName) {
+    switch (productName) {
+      case 'สินค้า A':
+        return 'assets/AllWell_Cat.jpg';
+      case 'สินค้า B':
+        return 'assets/Toy_Cat.jpg';
+      default:
+        return 'assets/default.jpg'; // รูปเริ่มต้นหากไม่ตรงกับสินค้า
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final order = widget.order;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('รายละเอียดออเดอร์'),
+        backgroundColor: Colors.blue,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 20),
+            // แสดงรูปสินค้า
+            Center(
+              child: Image.asset(
+                getImagePath(order['productName']),
+                height: 200,
+                width: 300,
+                fit: BoxFit.cover,
+              ),
+            ),
+            SizedBox(height: 20),
+            Divider(thickness: 1.5),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ชื่อสินค้า: ${order['productName']}',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  Text(
+                    'รายละเอียดอื่นๆ: รายละเอียดของสินค้า',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Divider(thickness: 1.0),
+                  Text('จำนวน: ${order['quantity']}', style: TextStyle(fontSize: 16)),
+                  Text('ราคาสินค้า: ${order['price']} บาท', style: TextStyle(fontSize: 16)),
+                  Divider(thickness: 1.0),
+                  Text('ราคาค่าส่ง: 50 บาท', style: TextStyle(fontSize: 16)),
+                  Text(
+                    'รวมราคาทั้งหมด: ${order['price'] + 50} บาท',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Divider(thickness: 1.0),
+                  Text('ชื่อผู้สั่ง: ${order['customerName']}', style: TextStyle(fontSize: 16)),
+                  Text('เบอร์โทรศัพท์: 081-234-5678', style: TextStyle(fontSize: 16)),
+                  Text(
+                    'ที่อยู่: 123/45 ถนนสุขสวัสดิ์ แขวงบางปะกอก เขตราษฎร์บูรณะ กรุงเทพมหานคร 10140',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 10),
+            Container(
+              height: 300,
+              child: _currentPosition == null
+                  ? Center(child: CircularProgressIndicator())
+                  : GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: _destination,
+                  zoom: 14,
+                ),
+                markers: {
+                  Marker(
+                    markerId: MarkerId('destination'),
+                    position: _destination,
+                    infoWindow: InfoWindow(title: 'ปลายทาง'),
+                  ),
+                  Marker(
+                    markerId: MarkerId('current'),
+                    position: _currentPosition!,
+                    infoWindow: InfoWindow(title: 'ตำแหน่งของฉัน'),
+                  ),
+                },
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                },
+              ),
+            ),
+            SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_currentPosition == null) return;
+                  double distance = Geolocator.distanceBetween(
+                    _currentPosition!.latitude,
+                    _currentPosition!.longitude,
+                    _destination.latitude,
+                    _destination.longitude,
+                  );
+
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('ระยะทาง'),
+                        content: Text(
+                          'ระยะทางจากตำแหน่งปัจจุบันไปยังปลายทาง: ${(distance / 1000).toStringAsFixed(2)} กิโลเมตร',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('ตกลง'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text('คำนวณระยะทาง'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

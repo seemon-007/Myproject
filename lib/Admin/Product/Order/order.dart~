@@ -1,0 +1,110 @@
+import 'package:flutter/material.dart';
+import 'order_detail.dart';
+
+class OrderPage extends StatefulWidget {
+  @override
+  _OrderPageState createState() => _OrderPageState();
+}
+
+class _OrderPageState extends State<OrderPage> {
+  // ตัวอย่างข้อมูลรายการออเดอร์
+  List<Map<String, dynamic>> orders = [
+    {
+      'orderId': 'OD001',
+      'customerName': 'สมชาย ใจดี',
+      'productName': 'สินค้า A',
+      'quantity': 2,
+      'price': 500,
+    },
+    {
+      'orderId': 'OD002',
+      'customerName': 'สมหญิง ใจงาม',
+      'productName': 'สินค้า B',
+      'quantity': 1,
+      'price': 300,
+    },
+  ];
+
+  // ฟังก์ชันแสดงป๊อปอัพยืนยันการลบ
+  void _confirmRemoveOrder(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('ยืนยันการลบ'),
+          content: Text('คุณแน่ใจหรือไม่ว่าต้องการลบออเดอร์นี้?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด Dialog
+              },
+              child: Text('ยกเลิก'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด Dialog
+                _removeOrder(index); // ลบออเดอร์
+              },
+              child: Text('ยืนยัน'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ฟังก์ชันลบออเดอร์
+  void _removeOrder(int index) {
+    setState(() {
+      orders.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('ออเดอร์'),
+        backgroundColor: Colors.blue,
+      ),
+      body: orders.isEmpty
+          ? Center(child: Text('ไม่มีรายการออเดอร์'))
+          : ListView.builder(
+        itemCount: orders.length,
+        itemBuilder: (context, index) {
+          final order = orders[index];
+          return GestureDetector(
+            onTap: () {
+              // ไปยังหน้า OrderDetail พร้อมส่งข้อมูลไป
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => OrderDetail(order: order),
+                ),
+              );
+            },
+            child: Card(
+              margin: EdgeInsets.all(10),
+              child: ListTile(
+                title: Text('รหัสออเดอร์: ${order['orderId']}'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('ชื่อผู้สั่ง: ${order['customerName']}'),
+                    Text('สินค้า: ${order['productName']}'),
+                    Text('จำนวน: ${order['quantity']}'),
+                    Text('ราคา: ${order['price']} บาท'),
+                  ],
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _confirmRemoveOrder(index),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

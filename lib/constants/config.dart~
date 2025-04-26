@@ -1,0 +1,4 @@
+class Config {
+  static const String BASE_IP = "10.51.203.179"; // IP address
+  static const int BASE_PORT = 3005; // Port
+}
