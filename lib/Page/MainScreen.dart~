@@ -14,9 +14,16 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
+  // เพิ่มเมธอดนี้เพื่อให้หน้าอื่นสามารถเรียกใช้เพื่อเปลี่ยนแท็บได้
+  void changeTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // สร้างหน้าต่างๆ ตามต้องการ
+    // สร้างหน้าต่างๆ ล่วงหน้า
     final List<Widget> _pages = [
       HomePage(),
       ProductListPage(),

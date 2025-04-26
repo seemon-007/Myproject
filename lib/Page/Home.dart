@@ -10,33 +10,58 @@ import 'package:Feedme/Page/register.dart';
 import 'package:provider/provider.dart';
 import 'package:Feedme/Page/Home.dart';
 import 'package:Feedme/Page/HomePage.dart';
-import 'BasePage.dart';
+import 'MainScreen.dart';
+// import 'BasePage.dart';
 
 void main() => runApp(LinkPage());
 
 class LinkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CartProvider(),
-      child: Builder(builder: (BuildContext context) {
-        return MaterialApp(
-          title: 'Flutter Link Page Demo',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-          ),
-          initialRoute: '/',
-          routes: {
-            '/': (context) => HomePage(),
-            '/Product': (context) => ProductListPage(),
-            '/Cart': (context) => CartPage(),
-            '/User': (context) => ProfilePage(),
-            '/Payment': (context) => PaymentPage(),
-            '/register': (context) => RegisterPage(),
-          },
-        );
-      }),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Link Page Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => MainScreen(),
+          '/Payment': (context) => PaymentPage(),
+          '/register': (context) => RegisterPage(),
+          '/login': (context) => LoginPage(),
+        },
+      ),
     );
   }
 }
+
+// class LinkPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return ChangeNotifierProvider(
+//       create: (_) => CartProvider(),
+//       child: Builder(builder: (BuildContext context) {
+//         return MaterialApp(
+//           title: 'Flutter Link Page Demo',
+//           theme: ThemeData(
+//             primarySwatch: Colors.blue,
+//           ),
+//           initialRoute: '/',
+//           routes: {
+//             '/': (context) => HomePage(),
+//             '/Product': (context) => ProductListPage(),
+//             '/Cart': (context) => CartPage(),
+//             '/User': (context) => ProfilePage(),
+//             '/Payment': (context) => PaymentPage(),
+//             '/register': (context) => RegisterPage(),
+//           },
+//         );
+//       }),
+//     );
+//   }
+// }
 

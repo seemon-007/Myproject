@@ -208,7 +208,6 @@ import 'package:Feedme/utils/userprofile/userprofile.dart';
 import 'package:Feedme/utils/userdata.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/config.dart';
-import 'MainScreen.dart';
 
 class ProfilePage extends StatefulWidget {
   @override

@@ -6,6 +6,7 @@ import 'BasePage.dart';
 import 'package:Feedme/constants/config.dart';
 import 'package:Feedme/Page/CartPage.dart';
 import 'package:Feedme/Page/product_list.dart';
+import 'MainScreen.dart';
 class HomePage extends StatelessWidget {
   Future<List<String>> fetchImageUrls() async {
     try {
@@ -31,9 +32,10 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BasePage(
-      index: 0,
-      body: Scaffold(
+    // return BasePage(
+    //   index: 0,
+    //   body: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: const Text(
             "Home",
@@ -92,7 +94,7 @@ class HomePage extends StatelessWidget {
             }
           },
         ),
-      ),
-    );
+      );
+    // );
   }
 }

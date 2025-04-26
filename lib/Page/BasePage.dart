@@ -1,5 +1,10 @@
-// import 'package:flutter/material.dart';
-//
+import 'package:Feedme/Page/product_list.dart';
+import 'package:flutter/material.dart';
+
+import 'CartPage.dart';
+import 'HomePage.dart';
+import 'ProfilePage.dart';
+
 // class BasePage extends StatefulWidget {
 //   final Widget body;
 //   final int index;
@@ -54,12 +59,7 @@
 //   }
 // }
 
-import 'package:Feedme/Page/product_list.dart';
-import 'package:flutter/material.dart';
 
-import 'CartPage.dart';
-import 'HomePage.dart';
-import 'ProfilePage.dart';
 
 
 class BasePage extends StatefulWidget {
@@ -88,7 +88,7 @@ class _BasePageState extends State<BasePage> {
       _currentIndex = index; // ✅ อัปเดต index ให้แสดงไอคอนที่เลือก
     });
 
-    Navigator.of(context).pushAndRemoveUntil(
+    Navigator.of(context).push(
       MaterialPageRoute(builder: (context) {
         if (index == 0) return HomePage();
         if (index == 1) return ProductListPage();
@@ -96,7 +96,7 @@ class _BasePageState extends State<BasePage> {
         if (index == 3) return ProfilePage();
         return HomePage();
       }),
-          (Route<dynamic> route) => false,
+          // (Route<dynamic> route) => false,
     );
   }
 
