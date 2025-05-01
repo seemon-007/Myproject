@@ -263,8 +263,7 @@ class _ProductListPageState extends State<ProductListPage> {
 
   @override
   Widget build(BuildContext context) {
-    // var cart = Provider.of<CartProvider>(context);
-    final cart = Provider.of<CartProvider>(context, listen: false);
+    var cart = Provider.of<CartProvider>(context);
 
     List<Product> filteredProducts = products.where((product) {
       return (selectedCategory == "All" || product.category == selectedCategory) &&

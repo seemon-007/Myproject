@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'dart:convert';
+import 'Home.dart';
 import 'HomePage.dart';
+import 'cart_provider.dart';
 import 'register.dart';
 import '../Admin/Admin.dart';
 import 'package:Feedme/constants/config.dart';
@@ -135,10 +137,20 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (_) => LinkPageadmin()),
           );
         } else {
-          print("Navigating to MainScreen after login");
+          // สร้าง Provider เฉพาะสำหรับ MainScreen
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => MainScreen()),
+            MaterialPageRoute(
+              builder: (context) => MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(create: (_) => CartProvider()),
+                ],
+                child: MaterialApp(
+                  home: MainScreen(),
+                  theme: ThemeData(primarySwatch: Colors.blue),
+                ),
+              ),
+            ),
           );
         }
       } else {

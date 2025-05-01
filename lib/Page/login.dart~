@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'dart:convert';
+import 'Home.dart';
 import 'HomePage.dart';
 import 'register.dart';
 import '../Admin/Admin.dart';
@@ -136,9 +137,10 @@ class _LoginPageState extends State<LoginPage> {
           );
         } else {
           print("Navigating to MainScreen after login");
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => MainScreen()),
+            MaterialPageRoute(builder: (context) => LinkPage()),
+                (route) => false,
           );
         }
       } else {
