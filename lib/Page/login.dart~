@@ -1,3 +1,4 @@
+import 'package:Feedme/Page/MainScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -85,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
       print('Password: ${PasswordController.text}');
 
       final response = await http.post(
-        Uri.parse('http://${Config.BASE_IP}:${Config.BASE_PORT}/api/auth/login1'),
+        Uri.parse('http://${Config.BASE_IP}:${Config.BASE_PORT}/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'Email': EmailController.text,
@@ -134,9 +135,10 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (_) => LinkPageadmin()),
           );
         } else {
+          print("Navigating to MainScreen after login");
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => HomePage()),
+            MaterialPageRoute(builder: (_) => MainScreen()),
           );
         }
       } else {

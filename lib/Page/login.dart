@@ -1,3 +1,4 @@
+import 'package:Feedme/Page/MainScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -134,9 +135,10 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (_) => LinkPageadmin()),
           );
         } else {
-          Navigator.push(
+          print("Navigating to MainScreen after login");
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => HomePage()),
+            MaterialPageRoute(builder: (_) => MainScreen()),
           );
         }
       } else {
