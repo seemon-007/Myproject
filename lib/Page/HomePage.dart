@@ -128,65 +128,69 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Home",
-          style: TextStyle(color: Colors.white),
+    return Column(
+      children: [
+        AppBar(
+          title: const Text(
+            "Home",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.blue,
+          elevation: 0,
+          centerTitle: true,
         ),
-        backgroundColor: Colors.blue,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: FutureBuilder<List<String>>(
-        future: fetchImageUrls(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            final images = snapshot.data!;
-            return GridView.builder(
-              padding: EdgeInsets.all(10),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.blue, width: 2),
-                    color: Colors.grey[200],
+        Expanded(
+          child: FutureBuilder<List<String>>(
+            future: fetchImageUrls(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (snapshot.hasData) {
+                final images = snapshot.data!;
+                return GridView.builder(
+                  padding: EdgeInsets.all(10),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
-                  child: images.length > index
-                      ? ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      images[index],
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.error, size: 50);
-                      },
-                    ),
-                  )
-                      : Center(
-                    child: Text(
-                      'ยังไม่มีโปรโมชั่น',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
+                  itemCount: 6,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.blue, width: 2),
+                        color: Colors.grey[200],
+                      ),
+                      child: images.length > index
+                          ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          images[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(Icons.error, size: 50);
+                          },
+                        ),
+                      )
+                          : Center(
+                        child: Text(
+                          'ยังไม่มีโปรโมชั่น',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    );
+                  },
                 );
-              },
-            );
-          } else {
-            return Center(child: Text('No images available'));
-          }
-        },
-      ),
+              } else {
+                return Center(child: Text('No images available'));
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }

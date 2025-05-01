@@ -270,99 +270,97 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Cart",
-          style: TextStyle(color: Colors.white),
+    return Column(
+      children: [
+        AppBar(
+          title: const Text(
+            "Cart",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.blue,
+          elevation: 0,
+          centerTitle: true,
         ),
-        backgroundColor: Colors.blue,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: fetchCartItems,
-              child: cart.cartItems.isEmpty
-                  ? Center(child: Text("ยังไม่มีสินค้าในตะกร้า"))
-                  : ListView.builder(
-                itemCount: cart.cartItems.length,
-                itemBuilder: (context, index) {
-                  var cartItem = cart.cartItems[index];
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Image(
-                            image: cartItem.imageUrl != null &&
-                                cartItem.imageUrl.startsWith("http")
-                                ? NetworkImage(cartItem.imageUrl)
-                                : AssetImage(cartItem.imageUrl ?? 'assets/images/default.png')
-                            as ImageProvider,
-                            height: 100,
-                            width: 100,
-                            fit: BoxFit.cover,
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: fetchCartItems,
+            child: cart.cartItems.isEmpty
+                ? Center(child: Text("ยังไม่มีสินค้าในตะกร้า"))
+                : ListView.builder(
+              itemCount: cart.cartItems.length,
+              itemBuilder: (context, index) {
+                var cartItem = cart.cartItems[index];
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image(
+                          image: cartItem.imageUrl != null &&
+                              cartItem.imageUrl.startsWith("http")
+                              ? NetworkImage(cartItem.imageUrl)
+                              : AssetImage(cartItem.imageUrl ?? 'assets/images/default.png')
+                          as ImageProvider,
+                          height: 100,
+                          width: 100,
+                          fit: BoxFit.cover,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(cartItem.productName),
+                              Text("ราคา: ${cartItem.price} บาท"),
+                            ],
                           ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(cartItem.productName),
-                                Text("ราคา: ${cartItem.price} บาท"),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              final cart = Provider.of<CartProvider>(context, listen: false);
-                              cart.removeProduct(index);
-                            },
-                          ),
-                        ],
-                      ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            final cart = Provider.of<CartProvider>(context, listen: false);
+                            cart.removeProduct(index);
+                          },
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
-            ),
-          ),
-          Container(
-            color: Colors.grey[200],
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Divider(),
-                ReusableWidget(title: "ราคาสินค้าทั้งหมด", value: cart.getTotalPrice()),
-                ReusableWidget(title: "ค่าจัดส่ง", value: _deliveryFee.toDouble()),
-                ReusableWidget(
-                  title: "ราคารวม",
-                  value: cart.getTotalPrice() + _deliveryFee,
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/Payment', arguments: {
-                      "deliveryMethod": _deliveryMethod,
-                      "totalPrice": cart.getTotalPrice() + _deliveryFee,
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
                   ),
-                  child: Text("ชำระเงิน"),
-                ),
-              ],
+                );
+              },
             ),
           ),
-        ],
-      ),
+        ),
+        Container(
+          color: Colors.grey[200],
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Divider(),
+              ReusableWidget(title: "ราคาสินค้าทั้งหมด", value: cart.getTotalPrice()),
+              ReusableWidget(title: "ค่าจัดส่ง", value: _deliveryFee.toDouble()),
+              ReusableWidget(
+                title: "ราคารวม",
+                value: cart.getTotalPrice() + _deliveryFee,
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/Payment', arguments: {
+                    "deliveryMethod": _deliveryMethod,
+                    "totalPrice": cart.getTotalPrice() + _deliveryFee,
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text("ชำระเงิน"),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
