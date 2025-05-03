@@ -235,26 +235,81 @@ class _ProductListPageState extends State<ProductListPage> {
     fetchProducts();
   }
 
+  // Future<void> fetchProducts() async {
+  //   // final String apiUrl = "http://${Config.BASE_IP}:${Config.BASE_PORT}/api/products";
+  //   //
+  //   // try {
+  //   //   final response = await http.get(Uri.parse(apiUrl));
+  //   //   print(" API Status Code: ${response.statusCode}");
+  //   //   if (response.statusCode == 200) {
+  //   //     List<dynamic> jsonData = json.decode(response.body);
+  //   //     print(" API Response Data:");
+  //   //     print(" Raw API Response: ${response.body}");
+  //   //     setState(() {
+  //   //       products = jsonData.map((json) => Product.fromJson(json)).toList();
+  //   //       isLoading = false;
+  //   //     });
+  //   //     print(" Product count: ${products.length}");
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //
+  //   final String apiUrl = "http://${Config.BASE_IP}:${Config.BASE_PORT}/api/products";
+  //   print("กำลังเชื่อมต่อกับ: $apiUrl"); // เพิ่มล็อกเพื่อดูบัก
+  //
+  //   try {
+  //     final response = await http.get(Uri.parse(apiUrl));
+  //     print("API Status Code: ${response.statusCode}");
+  //
+  //     if (response.statusCode == 200) {
+  //       List<dynamic> jsonData = json.decode(response.body);
+  //       setState(() {
+  //         products = jsonData.map((json) => Product.fromJson(json)).toList();
+  //         isLoading = false;
+  //       });
+  //       print("จำนวนสินค้าที่โหลดได้: ${products.length}");
+  //     } else {
+  //       setState(() {
+  //         isLoading = false;
+  //       });
+  //       throw Exception(" Failed to load products: ${response.statusCode}");
+  //     }
+  //   } catch (error) {
+  //     print(" Error fetching products: $error");
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
   Future<void> fetchProducts() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final String apiUrl = "http://${Config.BASE_IP}:${Config.BASE_PORT}/api/products";
+    print("กำลังเชื่อมต่อกับ: $apiUrl");
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
-      print(" API Status Code: ${response.statusCode}");
+      print("API Status Code: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         List<dynamic> jsonData = json.decode(response.body);
-        print(" API Response Data:");
-        print(" Raw API Response: ${response.body}");
+        print("ข้อมูล JSON: ${response.body.substring(0, 100)}..."); // แสดงเฉพาะส่วนแรก
+
         setState(() {
           products = jsonData.map((json) => Product.fromJson(json)).toList();
           isLoading = false;
         });
-        print(" Product count: ${products.length}");
+        print("จำนวนสินค้าที่โหลดได้: ${products.length}");
       } else {
-        throw Exception(" Failed to load products: ${response.statusCode}");
+        setState(() {
+          isLoading = false;
+        });
+        print("เกิดข้อผิดพลาด: ${response.statusCode}");
       }
     } catch (error) {
-      print(" Error fetching products: $error");
+      print("เกิดข้อผิดพลาดขณะเชื่อมต่อ: $error");
       setState(() {
         isLoading = false;
       });

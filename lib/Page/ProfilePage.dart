@@ -340,8 +340,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         onPressed: () async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           await prefs.clear();
-                          Navigator.pushReplacement(
-                              context, MaterialPageRoute(builder: (_) => LoginPage()));
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (context) => LoginPage()),
+                                (Route<dynamic> route) => false, // สิ่งนี้จะลบเส้นทางก่อนหน้าทั้งหมด
+                          );
                         },
                         child: const Text('Logout', style: TextStyle(color: Colors.red)),
                       ),
